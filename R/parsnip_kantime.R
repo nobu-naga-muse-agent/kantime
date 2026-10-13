@@ -54,7 +54,8 @@ kan_bridge_fit_impl <- \(x, y, h, input_size, max_steps, freq, scale = NULL) {
    model_spec <- kantime:::kan_spec(h = h,
                                     input_size = input_size,
                                     max_steps  = max_steps,
-                                    freq       = freq)
+                                    freq       = freq,
+                                    futr_exog_list = xreg_cols)
 
     model_fit  <-  kantime:::conformal_fit(
                      model_spec = model_spec,
@@ -178,6 +179,13 @@ rmok_bridge_fit_impl <- \(x, y, h, input_size, max_steps, freq, scale = NULL) {
    prepared  <- kantime:::prepare_nixtla_df(nixtla_df, outcome = "outcome")
    nixtla_df <- prepared$df
    xreg_cols <- prepared$xregs
+
+   # RMoK does not support exogenous regressors in neuralforecast 3.3.0
+   # (EXOGENOUS_FUTR/HIST/STAT are all False); fail loudly instead of
+   # silently ignoring them.
+   if (length(xreg_cols) > 0L) {
+     cli::cli_abort("RMoK does not support exogenous regressors {.code ({xreg_cols})}. Use KAN instead.")
+   }
 
    model_spec <- kantime:::rmok_spec(h = h,
                                      input_size = input_size,
