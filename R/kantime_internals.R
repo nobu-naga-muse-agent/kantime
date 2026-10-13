@@ -1,7 +1,12 @@
 # initial functions from nixtla-r-tutorials ----
 
 # model specs --
-kan_spec <- \(h = 12L, input_size = 24L, max_steps=20L, freq = "ME"){
+kan_spec <- \(h = 12L, input_size = 24L, max_steps=20L, freq = "ME", futr_exog_list = NULL){
+  # reticulate: ensure character vector becomes a Python list of strings,
+  # not a single string (which Python would iterate as characters)
+  if (!is.null(futr_exog_list)) {
+    futr_exog_list <- as.list(futr_exog_list)
+  }
   nf$NeuralForecast(
     models = list(
       nf$models$KAN(
@@ -9,7 +14,8 @@ kan_spec <- \(h = 12L, input_size = 24L, max_steps=20L, freq = "ME"){
           input_size=input_size,
           loss=nf$losses$pytorch$RMSE(),
           max_steps=max_steps,
-          scaler_type='standard'
+          scaler_type='standard',
+          futr_exog_list=futr_exog_list
       )
     ),
     freq=freq
